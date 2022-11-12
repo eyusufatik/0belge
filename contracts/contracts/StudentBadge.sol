@@ -9,9 +9,12 @@ contract StudentBadge is Badge {
         uint256 gpa; // e.g. 4.3 / 5 is 860 / 1000
     }
 
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+
     mapping(uint256 => StudentData) public idToBadgeInfo;
 
     constructor(
+        address burner,
         uint256 _defaultValidityPeriod
     )
         Badge(
@@ -19,7 +22,9 @@ contract StudentBadge is Badge {
             "OGRENCI",
             _defaultValidityPeriod
         )
-    {}
+    {
+        grantRole(BURNER_ROLE, burner);
+    }
 
     function mint(
         string memory school,
@@ -32,5 +37,10 @@ contract StudentBadge is Badge {
         uint256 tokenId = super.mint(msg.sender);
 
         idToBadgeInfo[tokenId] = StudentData(school, gpa);
+    }
+
+    // TODO: get over OOP issues with name "burn"
+    function invalidate(uint256 _tokenId) public onlyRole(BURNER_ROLE) {
+        super.burn(_tokenId);
     }
 }
