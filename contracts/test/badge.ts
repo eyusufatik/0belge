@@ -170,5 +170,17 @@ describe("Badge", function () {
                 )
             ).to.be.false;
         });
+
+        it("shouldn't transfer", async () => {
+            const { user1, other1 } = await getAccounts();
+
+            await badgingCtc.connect(user1).mint(proof, docHash, nums);
+
+            await expect(
+                badgingCtc
+                    .connect(user1)
+                    .transferFrom(user1.address, other1.address, 0)
+            ).to.be.revertedWith("SBT-01");
+        });
     });
 });
