@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx hardhat test",
     "pretty-sol-check": "prettier --check\"**/*.sol\"",
     "pretty-sol-fix": "prettier --write \"**/*.sol\"",
     "pretty-ts-check": "prettier --check \"**/*.ts\"",
@@ -27,6 +27,7 @@
     "prettier-plugin-solidity": "^1.0.0-rc.1"
   },
   "dependencies": {
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "snarkjs": "^0.5.0"
   }
 }

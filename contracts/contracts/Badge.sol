@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+// import "hardhat/console.sol";
+
 interface IVerifier {
     function verifyProof(
         bytes calldata proof,
@@ -35,8 +37,8 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         address _periodSetter,
         address _verifier
     ) ERC721("Belge Sistemi", "BELGE") {
-        grantRole(BURNER_ROLE, _burner);
-        grantRole(PERIOD_SETTER_ROLE, _periodSetter);
+        _setupRole(BURNER_ROLE, _burner);
+        _setupRole(PERIOD_SETTER_ROLE, _periodSetter);
 
         verifier = IVerifier(_verifier);
     }
@@ -61,7 +63,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     function mint(
         bytes calldata _proof,
         bytes32 _docHash,
-        uint248[3] calldata _nums
+        uint256[3] calldata _nums
     ) public {
         require(
             verifier.verifyProof(
@@ -73,10 +75,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
 
         bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
 
-        require(
-            block.timestamp > validUntil[msg.sender][docType],
-            "AHB-01"
-        );
+        require(block.timestamp > validUntil[msg.sender][docType], "AHB-01");
 
         validUntil[msg.sender][docType] =
             block.timestamp +
@@ -95,12 +94,27 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     }
 
     function numbersToBytes(
-        uint248 _num1,
-        uint248 _num2,
-        uint248 _num3
+        uint256 _num1,
+        uint256 _num2,
+        uint256 _num3
     ) private pure returns (bytes memory) {
         bytes memory docType = abi.encodePacked(_num1, _num2, _num3);
-        return docType;
+        uint8 nonZero;
+        for (uint8 i = 0; i < docType.length; i++) {
+            if (docType[i] != 0) {
+                nonZero++;
+            }
+        }
+
+        bytes memory lol = new bytes(nonZero);
+        uint8 j = 0;
+        for (uint8 i = 0; i < docType.length; i++) {
+            if (docType[i] != 0) {
+                lol[nonZero - j - 1] = docType[i]; // somehow nums from zk circuit is in reverse
+                j++;
+            }
+        }
+        return lol;
     }
 
     // Below stuff is to prevent NFT's from transferring
@@ -127,6 +141,13 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     ) public override {
         transferChecker(from, to);
         super.safeTransferFrom(from, to, id);
+    }
+
+    function ownerOf(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
+        address owner = _ownerOf(tokenId);
+        return owner;
     }
 
     function supportsInterface(
