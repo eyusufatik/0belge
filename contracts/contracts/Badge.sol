@@ -143,6 +143,13 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         super.safeTransferFrom(from, to, id);
     }
 
+    function ownerOf(
+        uint256 tokenId
+    ) public view virtual override returns (address) {
+        address owner = _ownerOf(tokenId);
+        return owner;
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721, AccessControl) returns (bool) {

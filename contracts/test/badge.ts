@@ -162,6 +162,13 @@ describe("Badge", function () {
             await badgingCtc.connect(burner).burn(tokenId);
 
             expect(await badgingCtc.balanceOf(user1.address)).to.equal(0);
+
+            expect(
+                await badgingCtc.isValid(
+                    user1.address,
+                    ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+                )
+            ).to.be.false;
         });
     });
 });
