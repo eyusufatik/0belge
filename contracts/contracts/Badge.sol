@@ -25,21 +25,18 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     // User to doc type to validity time.
     mapping(address => mapping(bytes32 => uint256)) private validUntil;
     mapping(uint256 => bytes32) private tokenIdToDocType;
-
-    uint256 internal defaultValidityPeriod;
+    mapping(address => mapping(bytes32 => uint256)) private docToTokenId;
+    mapping(bytes32 => uint256) private docTypeToValidityPeriod;
 
     IVerifier public immutable verifier;
 
     constructor(
         address _burner,
         address _periodSetter,
-        address _verifier,
-        uint256 _defaultValidityPeriod
+        address _verifier
     ) ERC721("Belge Sistemi", "BELGE") {
         grantRole(BURNER_ROLE, _burner);
         grantRole(PERIOD_SETTER_ROLE, _periodSetter);
-
-        defaultValidityPeriod = _defaultValidityPeriod;
 
         verifier = IVerifier(_verifier);
     }
@@ -48,8 +45,19 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         address _addr,
         bytes memory _docType
     ) public view returns (bool) {
+        bytes32 docTypeHash = keccak256(_docType);
+
         // if address doesn't have a badge mapping will return 0, function will return false
-        return block.timestamp < validUntil[_addr][keccak256(_docType)];
+        return
+            _addr == ownerOf(docToTokenId[_addr][docTypeHash]) &&
+            block.timestamp < validUntil[_addr][docTypeHash];
+    }
+
+    function setValidityPeriodForDocType(
+        bytes memory _docType,
+        uint256 _period
+    ) public onlyRole(PERIOD_SETTER_ROLE) {
+        docTypeToValidityPeriod[keccak256(_docType)] = _period;
     }
 
     function mint(
@@ -66,28 +74,34 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         );
 
         bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
+        bytes32 docTypeHash = keccak256(docType);
 
         require(
-            block.timestamp > validUntil[msg.sender][keccak256(docType)],
+            block.timestamp > validUntil[msg.sender][docTypeHash],
             "Address already has badge for document type!"
         );
 
-        validUntil[msg.sender][keccak256(docType)] =
+        validUntil[msg.sender][docTypeHash] =
             block.timestamp +
-            defaultValidityPeriod;
+            docTypeToValidityPeriod[docTypeHash];
 
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
 
-        tokenIdToDocType[tokenId] = keccak256(docType);
+        tokenIdToDocType[tokenId] = docTypeHash;
+        docToTokenId[msg.sender][docTypeHash] = tokenId;
+    }
+
+    function burn(uint256 _tokenId) public override onlyRole(BURNER_ROLE) {
+        _burn(_tokenId);
     }
 
     function numbersToBytes(
         uint248 _num1,
         uint248 _num2,
         uint248 _num3
-    ) private returns (bytes memory) {
+    ) private pure returns (bytes memory) {
         bytes memory docType = abi.encodePacked(_num1, _num2, _num3);
         return docType;
     }
