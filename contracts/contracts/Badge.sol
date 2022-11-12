@@ -61,7 +61,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     function mint(
         bytes calldata _proof,
         bytes32 _docHash,
-        uint248[3] calldata _nums
+        uint256[3] calldata _nums
     ) public {
         require(
             verifier.verifyProof(
@@ -92,9 +92,9 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     }
 
     function numbersToBytes(
-        uint248 _num1,
-        uint248 _num2,
-        uint248 _num3
+        uint256 _num1,
+        uint256 _num2,
+        uint256 _num3
     ) private pure returns (bytes memory) {
         bytes memory docType = abi.encodePacked(_num1, _num2, _num3);
         return docType;
