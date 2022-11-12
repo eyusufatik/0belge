@@ -34,6 +34,8 @@ abstract contract Badge is ERC721, ERC721Burnable, AccessControl {
             "Address already has valid badge!"
         );
 
+        // TODO: if second cond. burn the expired one
+
         validUntil[_to] = block.timestamp + defaultValidityPeriod;
 
         uint256 tokenId = _tokenIdCounter.current();
