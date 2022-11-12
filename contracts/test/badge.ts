@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { ethers, upgrades } from "hardhat";
+import { ethers, upgrades, network } from "hardhat";
 import { Badge, Verifier } from "../typechain-types";
 import { getAccounts } from "./helpers";
 
@@ -81,6 +81,22 @@ describe("Badge", function () {
         let badgingCtc: Badge;
         let verifierCtc: Verifier;
 
+        const proof =
+            "0x1e35ecc12a805178fb732ee2c8dd9d318dbe71ab3fc8a65cc0de5e73dd2592410888ac7e2930506d1694d93fabccf11ecfdfa11b9520e3e2a99aad6f2bd79ab124b691c79610cab4dbe417acbb8223c3f9dc7fe111edc317285e04be44837799223bf7f74add9df15148bb0514f469e738a26204fb6c5ee1c32cdf744a1e652813538854fcc3d846b891aaa77440f86e7870f861d21ffa29456211ce344309a32190ea70a6279414f58b4e07c4a111c21ddf098ca18924c457d9c235d1dfe8d60a23f5ee29db3b84984b3eec2855818209d86c9fdbdef58972afec4ab929eb161a6c082310329fd6d78a80fdc01d30b68a6f66d64e4741841b614aff86b7d4fa";
+        const docHash =
+            "0x256f5e7bbb6b7ca0837c2914f647e305e0ae5a49b8ab0dd5b96d1b6df601ed28";
+        const nums = [
+            BigNumber.from(
+                "0x000000000000000000000000000000000000000000000069636e65729fc496c3"
+            ),
+            BigNumber.from(
+                "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ),
+            BigNumber.from(
+                "0x0000000000000000000000000000000000000000000000000000000000000000"
+            ),
+        ];
+
         beforeEach(async function () {
             const { burner, periodSetter } = await getAccounts();
 
@@ -102,24 +118,9 @@ describe("Badge", function () {
                 );
         });
 
-        it("should mint", async () => {
+        it("should mint and expire", async () => {
             const { user1 } = await getAccounts();
 
-            const proof =
-                "0x1e35ecc12a805178fb732ee2c8dd9d318dbe71ab3fc8a65cc0de5e73dd2592410888ac7e2930506d1694d93fabccf11ecfdfa11b9520e3e2a99aad6f2bd79ab124b691c79610cab4dbe417acbb8223c3f9dc7fe111edc317285e04be44837799223bf7f74add9df15148bb0514f469e738a26204fb6c5ee1c32cdf744a1e652813538854fcc3d846b891aaa77440f86e7870f861d21ffa29456211ce344309a32190ea70a6279414f58b4e07c4a111c21ddf098ca18924c457d9c235d1dfe8d60a23f5ee29db3b84984b3eec2855818209d86c9fdbdef58972afec4ab929eb161a6c082310329fd6d78a80fdc01d30b68a6f66d64e4741841b614aff86b7d4fa";
-            const docHash =
-                "0x256f5e7bbb6b7ca0837c2914f647e305e0ae5a49b8ab0dd5b96d1b6df601ed28";
-            const nums = [
-                BigNumber.from(
-                    "0x000000000000000000000000000000000000000000000069636e65729fc496c3"
-                ),
-                BigNumber.from(
-                    "0x0000000000000000000000000000000000000000000000000000000000000000"
-                ),
-                BigNumber.from(
-                    "0x0000000000000000000000000000000000000000000000000000000000000000"
-                ),
-            ];
             await badgingCtc.connect(user1).mint(proof, docHash, nums);
 
             expect(
@@ -128,8 +129,39 @@ describe("Badge", function () {
                     ethers.utils.toUtf8Bytes("Öğrenci").reverse()
                 )
             ).to.be.true;
+
+            await network.provider.send("evm_increaseTime", [
+                tenDays.toNumber(),
+            ]);
+            await network.provider.send("evm_mine");
+
+            expect(
+                await badgingCtc.isValid(
+                    user1.address,
+                    ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+                )
+            ).to.be.false;
+        });
+
+        it("should burn", async () => {
+            const { user1, burner, other1 } = await getAccounts();
+
+            await badgingCtc.connect(user1).mint(proof, docHash, nums);
+
+            const tokenId = await badgingCtc.docToTokenId(
+                user1.address,
+                ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+            );
+
+            await expect(
+                badgingCtc.connect(other1).burn(tokenId)
+            ).to.be.rejectedWith(
+                `AccessControl: account ${other1.address.toLocaleLowerCase()} is missing role ${await badgingCtc.BURNER_ROLE()}`
+            );
+
+            await badgingCtc.connect(burner).burn(tokenId);
+
+            expect(await badgingCtc.balanceOf(user1.address)).to.equal(0);
         });
     });
-
-    describe("Burning", async () => {});
 });
