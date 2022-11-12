@@ -44,7 +44,7 @@ const Header = () => {
           >
             {/* <img src="https://chainway.xyz/img/favicon.jpg" alt="Boilerplate" width="30" height="60" className="mr-4" /> */}
             <span className="self-center text-xl font-bold whitespace-nowrap">
-            Offex
+            0Belge
             </span>
           </Link>
           <button
