@@ -78,19 +78,25 @@ const generateProof = async (str) => {
 
   // convert bigint to buffer
   // const chunks8Buffer = chunks8.map((c) => bigInt.leInt2Buff(c, 32));
-  const hash0 = pedersenHash(bigInt.leInt2Buff(BigInt(123), 31));
+  const hash0 = rbigint(31);
   const hash1 = pedersenHash(Buffer.concat(paddedChunks));
-  const hash2 = pedersenHash(bigInt.leInt2Buff(BigInt(123), 31));
+  // divide hash1 by 2^8
+  // const hash11 = hash1.shrn(8);
+  // get first 31 bytes of hash1
+  const hash1_31 = hash1.and(bigInt(bigInt(2)).pow(bigInt(248)).sub(bigInt(1)));
+  // get last 31 bytes of hash1
+  const mid = rbigint(31);
+  const hash2 = rbigint(31);
   console.log("hash0=>", hash0);
-  console.log("hash1=>", hash1);
+  console.log("hash1=>", hash1_31);
   console.log("hash2=>", hash2);
 
-  const hash0Buffer = bigInt.leInt2Buff(hash0, 32);
+  const hash0Buffer = hash0.leInt2Buff(31);
   // get first 31 bits of hash0
-  const hash1Buffer = bigInt.leInt2Buff(hash1, 32);
-  const hash2Buffer = bigInt.leInt2Buff(hash2, 32);
+  const hash1Buffer = hash1_31.leInt2Buff(31);
+  const hash2Buffer = hash2.leInt2Buff(31);
   // concatanate all the hashes
-  const hashes = Buffer.concat([hash0Buffer.slice(0, 31), hash1Buffer.slice(0, 31), hash2Buffer.slice(0, 31)]);
+  const hashes = Buffer.concat([hash0Buffer, hash1Buffer, hash2Buffer]);
   const hash = pedersenHash(hashes);
 
   // array of 256 integers
@@ -101,7 +107,7 @@ const generateProof = async (str) => {
     // private input 
     chunks: chunksInput,
     left: bigInt(hash0),
-    right: bigInt(hash2)
+    right: bigInt(hash2),
   }
   console.log("hash=>", input.belgeHash);
   console.log("chunks=>", input.chunks);
