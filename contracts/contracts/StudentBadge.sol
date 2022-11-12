@@ -6,7 +6,7 @@ import "./Badge.sol";
 contract StudentBadge is Badge {
     struct StudentData {
         string schoolName;
-        uint256 gpa; // e.g. 4.3 / 5 is 860 / 1000
+        uint8 year; // e.g. 2 / 3
     }
 
     bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
@@ -28,7 +28,7 @@ contract StudentBadge is Badge {
 
     function mint(
         string memory school,
-        uint256 gpa,
+        uint8 year,
         bytes memory _proof
     ) public {
         // TODO: verify proof
@@ -36,7 +36,7 @@ contract StudentBadge is Badge {
 
         uint256 tokenId = super.mint(msg.sender);
 
-        idToBadgeInfo[tokenId] = StudentData(school, gpa);
+        idToBadgeInfo[tokenId] = StudentData(school, year);
     }
 
     // TODO: get over OOP issues with name "burn"
