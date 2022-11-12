@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+// import "hardhat/console.sol";
+
 interface IVerifier {
     function verifyProof(
         bytes calldata proof,
@@ -97,7 +99,22 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         uint256 _num3
     ) private pure returns (bytes memory) {
         bytes memory docType = abi.encodePacked(_num1, _num2, _num3);
-        return docType;
+        uint8 nonZero;
+        for (uint8 i = 0; i < docType.length; i++) {
+            if (docType[i] != 0) {
+                nonZero++;
+            }
+        }
+
+        bytes memory lol = new bytes(nonZero);
+        uint8 j = 0;
+        for (uint8 i = 0; i < docType.length; i++) {
+            if (docType[i] != 0) {
+                lol[j] = docType[i];
+                j++;
+            }
+        }
+        return lol;
     }
 
     // Below stuff is to prevent NFT's from transferring
