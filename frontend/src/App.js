@@ -6,7 +6,7 @@ import React from 'react';
 const snarkjs = require("snarkjs");
 const circomlib = require("circomlib");
 /** Compute pedersen hash */
-const pedersenHash = (data) => circomlib.babyJub.unpackPoint(circomlib.pedersenHash.hash(data))[0]
+// const pedersenHash = (data) => circomlib.babyJub.unpackPoint(circomlib.pedersenHash.hash(data))[0]
 
 // import react
 
@@ -16,15 +16,16 @@ function App() {
   // on load set belge to BelgePedersenHash()
   React.useEffect(() => {
     console.log("useEffect");
-    console.log(BelgePedersenHash());
     setBelge(BelgePedersenHash());
   }, []);
 
   const BelgePedersenHash = () => {
-    const chunks = ["56858397600260208077046852247182485090268909834812573989411051127544958809" ,"115366970631544852139976717035608131148220155424266889123554456129375093593"]
-
+    console.log("BelgePedersenHash");
+    const chunks = ["56858397600260208077046852247182485090268909834812573989411051127544958809" ,"115366970631544852139976717035608131148220155424266889123554456129375093593"];
     console.log(chunks)
-    return Buffer.concat([snarkjs.bigInt(chunks[0]).leInt2Buff(31), snarkjs.bigInt(chunks[1]).leInt2Buff(31)]).toString("hex");
+    console.log("Buffer=>", Buffer.from(chunks[0]));
+    return circomlib.pedersenHash.hash((Buffer.from(chunks[0])));
+    return pedersenHash(Buffer.concat(chunks.map((c) => snarkjs.bigInt(c).leInt2Buff(31))));
   }
 
   return (
