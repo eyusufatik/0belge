@@ -2,9 +2,11 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-abstract contract Badge is ERC721 {
+abstract contract Badge is ERC721, ERC721Burnable, AccessControl {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
@@ -38,5 +40,11 @@ abstract contract Badge is ERC721 {
         _tokenIdCounter.increment();
         _safeMint(_to, tokenId);
         return tokenId;
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 }
