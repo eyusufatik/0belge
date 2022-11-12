@@ -1,0 +1,19 @@
+{
+  "extends": "solhint:recommended",
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error",
+    "avoid-throw": "off",
+    "avoid-suicide": "error",
+    "avoid-sha3": "warn",
+    "reentrancy": "error",
+    "not-rely-on-time": "off",
+    "compiler-version": ["error","0.8.17"],
+    "func-visibility": ["warn", {"ignoreConstructors": true}],
+    "quotes": ["warn", "double"],
+    "max-line-length": ["warn", 120],
+    "function-max-lines": ["warn", 75],
+    "code-complexity": ["warn", 9],
+    "reason-string": ["warn", {"maxLength": 12}]
+  }
+}
