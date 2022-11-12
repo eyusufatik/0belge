@@ -1,29 +1,30 @@
-pragma circom 2.0.0;
-
 include "../node_modules/circomlib/circuits/pedersen.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 
 
-template BelgePedersenHasher() {
-  signal input in[256]; // Belgenin string datasi
+template BelgePedersenHasher(N) {
+  signal input in[N]; // Belgenin string datasi
   signal output out; // Belgenin hash degeri
 
-  component pedersen = Pedersen(63488);
-  for(var i = 0; i < 256; i++) {
-    component bits = Num2Bits(248);
+  component pedersenHasher = Pedersen(248*N);
+  component bits = Num2Bits(248);
+  for(var i = 0; i < N; i++) {
     bits.in <== in[i];
-    pedersen.in[i*248 + 0] <== bits.out[0];
+    pedersenHasher.in[i*248 + 0] <== bits.out[0];
   }
-  out <== pedersen.out;
+  out <== pedersenHasher.out[0];
 }
 
-template Belge(){
-  signal input in[256]; // Belgenin string datasi
+template Belge(N){
+  signal private input chunks[N]; // Belgenin string datasi
   signal input belgeHash; // Belgenin hash degeri
 
-  component pedersen = BelgePedersenHasher();
-  pedersen.in <== in;
-  pedersen.out === belgeHash;
+  component pedersenHasher = BelgePedersenHasher(N);
+  for(var i = 0; i < N; i++) {
+    pedersenHasher.in[i] <== chunks[i];
+  }
+
+  pedersenHasher.out === belgeHash;
 }
 
-component main = Belge();
+component main = Belge(256);

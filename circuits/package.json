@@ -1,6 +1,11 @@
 {
   "dependencies": {
-    "circomlib": "^2.0.5",
-    "snarkjs": "^0.5.0"
+    "circomlib": "git+https://github.com/tornadocash/circomlib.git#c372f14d324d57339c88451834bf2824e73bbdbc",
+    "circom": "^0.0.35",
+    "snarkjs": "git+https://github.com/tornadocash/snarkjs.git#869181cfaf7526fe8972073d31655493a04326d5"
+  },
+  "scripts": {
+    "compile": "mkdir -p build/circuits && npx circom circuits/main.circom -o build/circuits/main.json && npx snarkjs info -c build/circuits/main.json",
+    "setup": "npx snarkjs setup --protocol groth -c build/circuits/main.json --pk build/circuits/main_proving_key.json --vk build/circuits/main_verification_key.json"
   }
 }
