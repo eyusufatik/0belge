@@ -23,10 +23,10 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         keccak256("PERIOD_SETTER_ROLE");
 
     // User to doc type to validity time.
-    mapping(address => mapping(bytes32 => uint256)) private validUntil;
-    mapping(uint256 => bytes32) private tokenIdToDocType;
-    mapping(address => mapping(bytes32 => uint256)) private docToTokenId;
-    mapping(bytes32 => uint256) private docTypeToValidityPeriod;
+    mapping(address => mapping(bytes => uint256)) public validUntil;
+    mapping(uint256 => bytes) public tokenIdToDocType;
+    mapping(address => mapping(bytes => uint256)) public docToTokenId;
+    mapping(bytes => uint256) public docTypeToValidityPeriod;
 
     IVerifier public immutable verifier;
 
@@ -45,19 +45,17 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         address _addr,
         bytes memory _docType
     ) public view returns (bool) {
-        bytes32 docTypeHash = keccak256(_docType);
-
         // if address doesn't have a badge mapping will return 0, function will return false
         return
-            _addr == ownerOf(docToTokenId[_addr][docTypeHash]) &&
-            block.timestamp < validUntil[_addr][docTypeHash];
+            _addr == ownerOf(docToTokenId[_addr][_docType]) &&
+            block.timestamp < validUntil[_addr][_docType];
     }
 
     function setValidityPeriodForDocType(
         bytes memory _docType,
         uint256 _period
     ) public onlyRole(PERIOD_SETTER_ROLE) {
-        docTypeToValidityPeriod[keccak256(_docType)] = _period;
+        docTypeToValidityPeriod[_docType] = _period;
     }
 
     function mint(
@@ -74,23 +72,22 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         );
 
         bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
-        bytes32 docTypeHash = keccak256(docType);
 
         require(
-            block.timestamp > validUntil[msg.sender][docTypeHash],
+            block.timestamp > validUntil[msg.sender][docType],
             "AHB-01"
         );
 
-        validUntil[msg.sender][docTypeHash] =
+        validUntil[msg.sender][docType] =
             block.timestamp +
-            docTypeToValidityPeriod[docTypeHash];
+            docTypeToValidityPeriod[docType];
 
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(msg.sender, tokenId);
 
-        tokenIdToDocType[tokenId] = docTypeHash;
-        docToTokenId[msg.sender][docTypeHash] = tokenId;
+        tokenIdToDocType[tokenId] = docType;
+        docToTokenId[msg.sender][docType] = tokenId;
     }
 
     function burn(uint256 _tokenId) public override onlyRole(BURNER_ROLE) {
