@@ -44,6 +44,22 @@ abstract contract Badge is ERC721, ERC721Burnable, AccessControl {
         return tokenId;
     }
 
+    function transferChecker(address from, address to) internal pure {
+        if (from != address(0) || to != address(0)) {
+            revert("SBT: Only soulbound transfers allowed");
+        }
+    }
+
+    function transferFrom(address from, address to, uint256 id) public override {
+        transferChecker(from, to);
+        super.transferFrom(from, to, id);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 id) public override {
+        transferChecker(from, to);
+        super.safeTransferFrom(from, to, id);
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721, AccessControl) returns (bool) {
