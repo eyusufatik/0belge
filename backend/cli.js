@@ -21,6 +21,8 @@ const program = require('commander');
 const { GasPriceOracle } = require('gas-price-oracle');
 const SocksProxyAgent = require('socks-proxy-agent');
 const is_ip_private = require('private-ip');
+var pdfUtil = require('pdf-to-text');
+
 
 
 /** Whether we are in a browser or node.js */
@@ -104,8 +106,27 @@ const generateProof = async (str) => {
   return { proof };
 }
 
+const extractTextFromPdf = async (filepath) => {
+  let text = '';
+  var option = {from: 0, to: 0};
+
+  pdfUtil.pdfToText(filepath, option, function(err, data) {
+    if (err) throw(err);
+    text = data;
+    // console.log(data); //print text    
+  });
+  // remove newlines
+  const textWithoutNewlines = text.replace(/\n/g, ' ');
+  // get utf8 bytes
+  const utf8Bytes = Buffer.from(textWithoutNewlines, 'utf8');
+
+  return utf8Bytes;
+}
+
 const main = async () => {
-  const proof = await generateProof("Hello Worladsfs ");
-  console.log("proof=>", proof);
+  const text = await extractTextFromPdf('belgeler/10089028918_Ogrenci.pdf')
+  console.log(text);
+  // const proof = await generateProof("Hello Worladsfs ");
+  // console.log("proof=>", proof);
 }
 main();
