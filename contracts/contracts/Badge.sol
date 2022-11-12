@@ -6,56 +6,125 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-abstract contract Badge is ERC721, ERC721Burnable, AccessControl {
+interface IVerifier {
+    function verifyProof(
+        bytes calldata proof,
+        uint[4] calldata inputs
+    ) external view returns (bool);
+}
+
+contract Badge is ERC721, ERC721Burnable, AccessControl {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
 
-    mapping(address => uint256) internal validUntil;
-    uint256 internal defaultValidityPeriod;
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+    bytes32 public constant PERIOD_SETTER_ROLE =
+        keccak256("PERIOD_SETTER_ROLE");
+
+    // User to doc type to validity time.
+    mapping(address => mapping(bytes => uint256)) public validUntil;
+    mapping(uint256 => bytes) public tokenIdToDocType;
+    mapping(address => mapping(bytes => uint256)) public docToTokenId;
+    mapping(bytes => uint256) public docTypeToValidityPeriod;
+
+    IVerifier public immutable verifier;
 
     constructor(
-        string memory _name,
-        string memory _symbol,
-        uint256 _defaultValidityPeriod
-    ) ERC721(_name, _symbol) {
-        defaultValidityPeriod = _defaultValidityPeriod;
+        address _burner,
+        address _periodSetter,
+        address _verifier
+    ) ERC721("Belge Sistemi", "BELGE") {
+        grantRole(BURNER_ROLE, _burner);
+        grantRole(PERIOD_SETTER_ROLE, _periodSetter);
+
+        verifier = IVerifier(_verifier);
     }
 
-    function isStillValid(address addr) public view returns (bool) {
+    function isValid(
+        address _addr,
+        bytes memory _docType
+    ) public view returns (bool) {
         // if address doesn't have a badge mapping will return 0, function will return false
-        return block.timestamp < validUntil[addr];
+        return
+            _addr == ownerOf(docToTokenId[_addr][_docType]) &&
+            block.timestamp < validUntil[_addr][_docType];
     }
 
-    function mint(address _to) internal returns (uint256) {
+    function setValidityPeriodForDocType(
+        bytes memory _docType,
+        uint256 _period
+    ) public onlyRole(PERIOD_SETTER_ROLE) {
+        docTypeToValidityPeriod[_docType] = _period;
+    }
+
+    function mint(
+        bytes calldata _proof,
+        bytes32 _docHash,
+        uint248[3] calldata _nums
+    ) public {
         require(
-            balanceOf(_to) == 0 ||
-                (balanceOf(_to) > 0 && block.timestamp > validUntil[_to]),
-            "Address already has valid badge!"
+            verifier.verifyProof(
+                _proof,
+                [uint256(_docHash), _nums[0], _nums[1], _nums[2]]
+            ),
+            "IP-01"
         );
 
-        // TODO: if second cond. burn the expired one
+        bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
 
-        validUntil[_to] = block.timestamp + defaultValidityPeriod;
+        require(
+            block.timestamp > validUntil[msg.sender][docType],
+            "AHB-01"
+        );
+
+        validUntil[msg.sender][docType] =
+            block.timestamp +
+            docTypeToValidityPeriod[docType];
 
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
-        _safeMint(_to, tokenId);
-        return tokenId;
+        _safeMint(msg.sender, tokenId);
+
+        tokenIdToDocType[tokenId] = docType;
+        docToTokenId[msg.sender][docType] = tokenId;
     }
+
+    function burn(uint256 _tokenId) public override onlyRole(BURNER_ROLE) {
+        _burn(_tokenId);
+    }
+
+    function numbersToBytes(
+        uint248 _num1,
+        uint248 _num2,
+        uint248 _num3
+    ) private pure returns (bytes memory) {
+        bytes memory docType = abi.encodePacked(_num1, _num2, _num3);
+        return docType;
+    }
+
+    // Below stuff is to prevent NFT's from transferring
 
     function transferChecker(address from, address to) internal pure {
         if (from != address(0) || to != address(0)) {
-            revert("SBT: Only soulbound transfers allowed");
+            revert("SBT-01");
         }
     }
 
-    function transferFrom(address from, address to, uint256 id) public override {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 id
+    ) public override {
         transferChecker(from, to);
         super.transferFrom(from, to, id);
     }
 
-    function safeTransferFrom(address from, address to, uint256 id) public override {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id
+    ) public override {
         transferChecker(from, to);
         super.safeTransferFrom(from, to, id);
     }

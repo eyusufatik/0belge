@@ -7,7 +7,16 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.17",
+  solidity: {
+    compilers: [
+      {
+        version: "0.8.17",
+      },
+      {
+        version: "0.5.0",
+      },
+    ],
+  },
   networks: {
     digiathon: {
       chainId: 43112,

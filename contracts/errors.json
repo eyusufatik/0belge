@@ -1,0 +1,5 @@
+{
+    "IP-01": "Invalid proof!",
+    "AHB-01": "Address already has badge for document type!",
+    "SBT-01": "Only from/to 0 address transfers are allowed!"
+}
