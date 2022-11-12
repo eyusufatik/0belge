@@ -51,26 +51,45 @@ template BelgePedersenHasher(N) {
 }
 
 template Belge(N){
-  signal private input chunks[N]; // Belgenin string datasi
+  signal input chunks[N]; // Belgenin string datasi
   signal private input left;
   signal private input right;
+  // signal private input mid;
   signal input belgeHash; // Belgenin hash degeri
 
   component belgeHasher = BelgePedersenHasher(N);
-  component bits[3] = Num2Bits(248)[3];
+  component bits1 = Num2Bits(248);
+  component bits2 = Num2Bits(253);
+  component bits3 = Num2Bits(248);
+  // component bits[3] = Num2Bits(248)[3];
   component pedersen = Pedersen(248*3);
   for(var i = 0; i < N; i++) {
     belgeHasher.in[i] <== chunks[i];
   }
-  bits[0].in <== left;
-  // belgeHash === belgeHasher.out;
-  bits[1].in <== belgeHasher.out;
-  bits[2].in <== right;
-  for(var i = 0; i < 3; i++){
-    for(var j = 0; j < 248; j++){
-      pedersen.in[i*248+j] <== bits[i].out[j];
-    }
+  bits1.in <== left;
+  bits2.in <== belgeHasher.out;
+  bits3.in <== right;
+  for(var j = 0; j < 248; j++){
+    pedersen.in[j] <== bits1.out[j];
   }
+  for(var j = 0; j < 248; j++){
+    pedersen.in[248 + j] <== bits2.out[j];
+  }
+
+  for(var j = 0; j < 248; j++){
+    pedersen.in[248*2 + j] <== bits3.out[j];
+  }
+
+  // bits[0].in <== left;
+  // // divide belgeHashe.out by 2^3
+  // var x = belgeHasher.out;
+  // bits[1].in <== x >> 3;
+  // bits[2].in <== right;
+  // for(var i = 0; i < 3; i++){
+  //   for(var j = 0; j < 248; j++){
+  //     pedersen.in[i*248+j] <== bits[i].out[j];
+  //   }
+  // }
   belgeHash === pedersen.out[0];
 }
 

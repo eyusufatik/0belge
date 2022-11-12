@@ -21,6 +21,8 @@ const program = require('commander');
 const { GasPriceOracle } = require('gas-price-oracle');
 const SocksProxyAgent = require('socks-proxy-agent');
 const is_ip_private = require('private-ip');
+var pdfUtil = require('pdf-to-text');
+
 
 
 /** Whether we are in a browser or node.js */
@@ -49,13 +51,6 @@ const string2chunks = (str) => {
   }
   return chunks;
 }
-// const string2PedersenHash = (str) => {
-
-//   console.log("chunks=>", chunks);
-//   // const chunks = bytes.match(/.{1,31}/g);
-//   // const chunks = str.match(/.{1,31}/g).map((c) => bigInt.leInt2Buff(c.length, 31));
-//   return pedersenHash(Buffer.concat(chunks));
-// }
 
 const generateProof = async (str) => {
   const N = 3;
@@ -64,33 +59,27 @@ const generateProof = async (str) => {
   const paddedChunks = chunks.length < N ? [...chunks, ...Array(N - chunks.length).fill(Buffer.alloc(31))] : chunks;
   console.log(paddedChunks);
   const chunksInput = paddedChunks.map((c) => BigInt(bigInt.leBuff2int(c)));
-  // // split paddedChunks into 8 chunks
-  // const chunks8 = [];
-  // for(let i = 0; i < paddedChunks.length; i += 2) {
-  //   const hashvalue = pedersenHash(Buffer.concat(paddedChunks.slice(i, i + 2)));
-  //   console.log("hashvalue=>", hashvalue);
-  //   // convert hashvalue to Buffer from bigint
-  //   const hashvalueBuffer = bigInt.beInt2Buff(hashvalue, 32);
-  //   chunks8.push(hashvalueBuffer);
-  // }
-
-
-
   // convert bigint to buffer
   // const chunks8Buffer = chunks8.map((c) => bigInt.leInt2Buff(c, 32));
-  const hash0 = pedersenHash(bigInt.leInt2Buff(BigInt(123), 31));
+  const hash0 = rbigint(31);
   const hash1 = pedersenHash(Buffer.concat(paddedChunks));
-  const hash2 = pedersenHash(bigInt.leInt2Buff(BigInt(123), 31));
+  // divide hash1 by 2^8
+  // const hash11 = hash1.shrn(8);
+  // get first 31 bytes of hash1
+  const hash1_31 = hash1.and(bigInt(bigInt(2)).pow(bigInt(248)).sub(bigInt(1)));
+  // get last 31 bytes of hash1
+  const mid = rbigint(31);
+  const hash2 = rbigint(31);
   console.log("hash0=>", hash0);
-  console.log("hash1=>", hash1);
+  console.log("hash1=>", hash1_31);
   console.log("hash2=>", hash2);
 
-  const hash0Buffer = bigInt.leInt2Buff(hash0, 32);
+  const hash0Buffer = hash0.leInt2Buff(31);
   // get first 31 bits of hash0
-  const hash1Buffer = bigInt.leInt2Buff(hash1, 32);
-  const hash2Buffer = bigInt.leInt2Buff(hash2, 32);
+  const hash1Buffer = hash1_31.leInt2Buff(31);
+  const hash2Buffer = hash2.leInt2Buff(31);
   // concatanate all the hashes
-  const hashes = Buffer.concat([hash0Buffer.slice(0, 31), hash1Buffer.slice(0, 31), hash2Buffer.slice(0, 31)]);
+  const hashes = Buffer.concat([hash0Buffer, hash1Buffer, hash2Buffer]);
   const hash = pedersenHash(hashes);
 
   // array of 256 integers
@@ -101,7 +90,7 @@ const generateProof = async (str) => {
     // private input 
     chunks: chunksInput,
     left: bigInt(hash0),
-    right: bigInt(hash2)
+    right: bigInt(hash2),
   }
   console.log("hash=>", input.belgeHash);
   console.log("chunks=>", input.chunks);
@@ -117,8 +106,27 @@ const generateProof = async (str) => {
   return { proof };
 }
 
+const extractTextFromPdf = async (filepath) => {
+  let text = '';
+  var option = {from: 0, to: 0};
+
+  pdfUtil.pdfToText(filepath, option, function(err, data) {
+    if (err) throw(err);
+    text = data;
+    // console.log(data); //print text    
+  });
+  // remove newlines
+  const textWithoutNewlines = text.replace(/\n/g, ' ');
+  // get utf8 bytes
+  const utf8Bytes = Buffer.from(textWithoutNewlines, 'utf8');
+
+  return utf8Bytes;
+}
+
 const main = async () => {
-  const proof = await generateProof("Hello Worladsfs ");
-  console.log("proof=>", proof);
+  const text = await extractTextFromPdf('belgeler/10089028918_Ogrenci.pdf')
+  console.log(text);
+  // const proof = await generateProof("Hello Worladsfs ");
+  // console.log("proof=>", proof);
 }
 main();
