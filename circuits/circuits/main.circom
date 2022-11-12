@@ -16,3 +16,14 @@ template BelgePedersenHasher() {
   }
   out <== pedersen.out;
 }
+
+template Belge(){
+  signal input in[256]; // Belgenin string datasi
+  signal input belgeHash; // Belgenin hash degeri
+
+  component pedersen = BelgePedersenHasher();
+  pedersen.in <== in;
+  pedersen.out === belgeHash;
+}
+
+component main = Belge();
