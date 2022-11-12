@@ -70,7 +70,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
                 _proof,
                 [uint256(_docHash), _nums[0], _nums[1], _nums[2]]
             ),
-            "Invalid proof"
+            "IP-01"
         );
 
         bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
@@ -78,7 +78,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
 
         require(
             block.timestamp > validUntil[msg.sender][docTypeHash],
-            "Address already has badge for document type!"
+            "AHB-01"
         );
 
         validUntil[msg.sender][docTypeHash] =
@@ -110,7 +110,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
 
     function transferChecker(address from, address to) internal pure {
         if (from != address(0) || to != address(0)) {
-            revert("SBT: Only soulbound transfers allowed");
+            revert("SBT-01");
         }
     }
 
