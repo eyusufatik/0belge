@@ -1,16 +1,54 @@
 import { useState } from 'react'
+import { Document, Page } from 'react-pdf/dist/esm/entry.webpack5';
 // import axios
 import axios from 'axios';
 const Pdf = () => {
-  const [barkodNo, setBarkodNo] = useState("");
-  const [tc, setTc] = useState("");
+  const [barkodNo, setBarkodNo] = useState("YOKOG18C83NE4FJAGW");
+  const [tc, setTc] = useState("10089028918");
   const [pdfUrl, setPdfUrl] = useState("");
+  const pageNumber = 1;
+  const [selectedText, setSelectedText] = useState(null);
+
 
   const getPdf = async () => {
     alert("PDF indiriliyor...");
-    const response = await axios.get(`http://localhost:3001/pdf/${barkodNo}/${tc}`);
-    console.log(response);
-    setPdfUrl(response.data);
+    // const response = await axios.get(`http://localhost:5000/get_document?barkod=${barkodNo}&tc=${tc}`);
+    // console.log(response);
+    setPdfUrl(`http://127.0.0.1:5000/get_document?barkod=${barkodNo}&tc=${tc}`);
+  }
+
+  const mintNft = async () => {
+    // get selected text in window
+    // const iframe = document.getElementById('iframe');
+    // const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    // const selectedText = iframeDocument.getSelection().toString();
+    // alert(selectedText);
+    const selectedText = window.getSelection().toString();
+    setSelectedText(selectedText);
+    // send request to http://localhost:3001/generate_proof?barkod=${barkodNo}&tc=${tc}
+  }
+
+  if(selectedText){
+    return (
+      <div>
+        <h1>Selected Text: {selectedText}</h1>
+        <h3>Barkod: {barkodNo}</h3>
+        <h3>TC: {tc}</h3>
+        <div className="w-32 h-32">
+            <svg width="1024" height="1024" viewBox="0 0 1024 1024" className="w-80 h-80" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style={{stopColor:"#FF0000",stopOpacity:1}} />
+                <stop offset="100%" style={{stopColor:"#FFFF00",stopOpacity:1}} />
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="1024" height="1024" rx="50" ry="50" fill="url(#grad1)" />
+              <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="924">{selectedText}</text>
+              <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="100">0Belge</text>
+            </svg>
+        </div>
+      </div>
+    )
   }
 
   // Return a tailwind div with two text boxes and one submit button
@@ -18,9 +56,14 @@ const Pdf = () => {
     // Show the pdf on the screen
     return (
       <div>
-        {barkodNo}
-        {tc}
-        <iframe src={pdfUrl} width="100%" height="1000px"></iframe>
+        <a href={pdfUrl}>SEE PDF</a>
+        <Document file={pdfUrl}>
+          <Page pageNumber={pageNumber} />
+        </Document>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={mintNft}
+        >Mint NFT</button>
       </div>
     );
   }
