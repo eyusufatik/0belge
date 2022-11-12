@@ -51,7 +51,7 @@ template BelgePedersenHasher(N) {
 }
 
 template Belge(N){
-  signal private input chunks[N]; // Belgenin string datasi
+  signal input chunks[N]; // Belgenin string datasi
   signal private input left;
   signal private input right;
   // signal private input mid;

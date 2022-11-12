@@ -49,13 +49,6 @@ const string2chunks = (str) => {
   }
   return chunks;
 }
-// const string2PedersenHash = (str) => {
-
-//   console.log("chunks=>", chunks);
-//   // const chunks = bytes.match(/.{1,31}/g);
-//   // const chunks = str.match(/.{1,31}/g).map((c) => bigInt.leInt2Buff(c.length, 31));
-//   return pedersenHash(Buffer.concat(chunks));
-// }
 
 const generateProof = async (str) => {
   const N = 3;
@@ -64,18 +57,6 @@ const generateProof = async (str) => {
   const paddedChunks = chunks.length < N ? [...chunks, ...Array(N - chunks.length).fill(Buffer.alloc(31))] : chunks;
   console.log(paddedChunks);
   const chunksInput = paddedChunks.map((c) => BigInt(bigInt.leBuff2int(c)));
-  // // split paddedChunks into 8 chunks
-  // const chunks8 = [];
-  // for(let i = 0; i < paddedChunks.length; i += 2) {
-  //   const hashvalue = pedersenHash(Buffer.concat(paddedChunks.slice(i, i + 2)));
-  //   console.log("hashvalue=>", hashvalue);
-  //   // convert hashvalue to Buffer from bigint
-  //   const hashvalueBuffer = bigInt.beInt2Buff(hashvalue, 32);
-  //   chunks8.push(hashvalueBuffer);
-  // }
-
-
-
   // convert bigint to buffer
   // const chunks8Buffer = chunks8.map((c) => bigInt.leInt2Buff(c, 32));
   const hash0 = rbigint(31);
