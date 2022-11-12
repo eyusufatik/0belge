@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx hardhat test",
     "pretty-sol-check": "prettier --check\"**/*.sol\"",
     "pretty-sol-fix": "prettier --write \"**/*.sol\"",
     "pretty-ts-check": "prettier --check \"**/*.ts\"",

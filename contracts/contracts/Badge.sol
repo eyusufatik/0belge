@@ -35,8 +35,8 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         address _periodSetter,
         address _verifier
     ) ERC721("Belge Sistemi", "BELGE") {
-        grantRole(BURNER_ROLE, _burner);
-        grantRole(PERIOD_SETTER_ROLE, _periodSetter);
+        _setupRole(BURNER_ROLE, _burner);
+        _setupRole(PERIOD_SETTER_ROLE, _periodSetter);
 
         verifier = IVerifier(_verifier);
     }
@@ -73,10 +73,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
 
         bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
 
-        require(
-            block.timestamp > validUntil[msg.sender][docType],
-            "AHB-01"
-        );
+        require(block.timestamp > validUntil[msg.sender][docType], "AHB-01");
 
         validUntil[msg.sender][docType] =
             block.timestamp +
