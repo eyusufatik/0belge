@@ -121,162 +121,17 @@ const extractTextFromPdf = async (filepath) => {
   return text;
 }
 
-// Reference python code:
-// import requests
-// import json
-
-// ENDPOINT = 'https://www.turkiye.gov.tr'
-
-
-// def get_token(session):
-//     """Get token from turkiye.gov.tr"""
-    
-//     response = session.get(ENDPOINT + '/belge-dogrulama')
-//     # serach for data-token attribute
-//     token = response.text.split('data-token="')[1].split('"')[0]
-//     return token
-
-// def get_document(tc, barkod):
-//   # Create a session
-//   session = requests.Session()
-//   session.headers.update({
-//         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-//       })
-//   session.base_uri = ENDPOINT
-//   session.timeout = 5
-//   response = session.get(ENDPOINT + '/belge-dogrulama')
-//   token = response.text.split('data-token="')[1].split('"')[0]
-//   print(token)
-//   # return token
-//   data = {
-//     'sorgulananBarkod': barkod,
-//     'token': token,
-//     'btn': 'Devam+Et'
-//   }
-//   response = session.post(ENDPOINT + '/belge-dogrulama&submit', data=data)
-//   token = response.text.split('data-token="')[1].split('"')[0]
-//   print(token)
-//   data = {
-//     'ikinciAlan': tc,
-//     'token': token,
-//     'btn': 'Devam+Et'
-//   }
-//   response = session.post(ENDPOINT + '/belge-dogrulama?islem=dogrulama&submit=', data=data)
-//   token = response.text.split('data-token="')[1].split('"')[0]
-//   print(token)
-//   data = {
-//     'chkOnay': '1',
-//     'token': token,
-//     'btn': 'Devam+Et'
-//   }
-//   response = session.post(ENDPOINT + '/belge-dogrulama?islem=onay&submit', data=data)
-//   token = response.text.split('data-token="')[1].split('"')[0]
-//   print(token)
-//   response = session.get(ENDPOINT + '/belge-dogrulama?belge=goster&goster=1&display=display')
-//   # Convert response data to pdf and save it
-//   with open('belge.pdf', 'wb') as f:
-//     f.write(response.content)
-
-//   # convert bytes to integer array
-//   data = [int(x) for x in response.content]
-//   return len(data)
-//   return response.text
-
-
-// def get_hex_from_bytes(data):
-//     """Convert bytes to hex"""
-//     return ''.join('{:02x}'.format(x) for x in data)
-
-// def read_pdf(filename):
-//     """Read pdf file and return bytes"""
-//     with open(filename, 'rb') as f:
-//         return get_hex_from_bytes(f.read())
-
-// if __name__ == '__main__':
-//   print(len(read_pdf('belge.pdf')))
-//   # token = get_document('10089028918', 'YOKOG18C83NE4FJAGW')
-//   # print(token)
-
-const getBelgeFromEdevlet = async (tcNo, belgeNo) => {
-  const ENDPOINT = 'https://www.turkiye.gov.tr';
-  // const jar = new CookieJar();
-
-  // const session = axios.create({
-  //   withCredentials: true,
-  //   baseURL: ENDPOINT,
-  //   timeout: 5000,
-  //   headers: {
-  //     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-  //   },
-  // });
-  let jar = new CookieJar();
-  let session = wrapper(axios.create({
-    jar,
-    // withCredentials: true,
-    baseURL: ENDPOINT,
-    timeout: 5000,
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
-    },
-  }));
-
-  
-
-  const get_token = async () => {
-    const response = await session.get('/belge-dogrulama');
-    const token = response.data.split('data-token="')[1].split('"')[0];
-    return token;
-  }
-
-  const get_document = async (tc, barkod) => {
-    let token = await get_token();
-    console.log("First token=>", token);
-    let data = {
-      sorgulananBarkod: barkod,
-      token: token,
-      btn: 'Devam+Et'
-    }
-    let response = await session.post('/belge-dogrulama&submit', data);
-    token = response.data.split('data-token="')[1].split('"')[0];
-    console.log("Second token=>", token);
-    data = {
-      ikinciAlan: tc,
-      token: token,
-      btn: 'Devam+Et'
-    }
-    response = await session.post('/belge-dogrulama?islem=dogrulama&submit=', data);
-    token = response.data.split('data-token="')[1].split('"')[0];
-    console.log("Third token=>", token);
-    data = {
-      chkOnay: '1',
-      token: token,
-      btn: 'Devam+Et'
-    }
-    response = await session.post('/belge-dogrulama?islem=onay&submit', data);
-    token = response.data.split('data-token="')[1].split('"')[0];
-    console.log("Fourth token=>", token);
-    response = await session.get('/belge-dogrulama?belge=goster&goster=1&display=display');
-    // data = [int(x) for x in response.content];
-    return "tet";
-  }
-  return await get_document(tcNo, belgeNo);
-
-  // const get_hex_from_bytes = (data) => {
-  //   return ''.join('{:02x}'.format(x) for x in data);
-  // }
-
-  // const read_pdf = (filename) => {
-  //   with open(filename, 'rb') as f:
-  //       return get_hex_from_bytes(f.read());
-  // }
-
-  // const token = await get_document('10089028918', 'YOKOG18C83NE4FJAGW');
-  // console.log(token);
-
-}
 
 const main = async () => {
-  console.log(await getBelgeFromEdevlet('10089028918', 'YOKOG18C83NE4FJAGW'));
+  const tc = '10089028918';
+  const barkod = "YOKOG18C83NE4FJAGW";
+  const selectedText = "Boğaziçi Üniversitesi";
+  const {proof} = generateProof(selectedText);
+  console.log(proof);
+
+  const text = await extractTextFromPdf("belgeler/" + tc + "_" + barkod + ".pdf");
+  console.log(text);
+  // console.log(await getBelgeFromEdevlet('10089028918', 'YOKOG18C83NE4FJAGW'));
   // const text = await extractTextFromPdf('belgeler/10089028918_Ogrenci.pdf');
   // console.log(text);
   // const proof = await generateProof("Hello Worladsfs ");
