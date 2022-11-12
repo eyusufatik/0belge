@@ -110,7 +110,7 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         uint8 j = 0;
         for (uint8 i = 0; i < docType.length; i++) {
             if (docType[i] != 0) {
-                lol[j] = docType[i];
+                lol[nonZero - j - 1] = docType[i]; // somehow nums from zk circuit is in reverse
                 j++;
             }
         }

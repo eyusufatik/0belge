@@ -113,7 +113,7 @@ describe("Badge", function () {
             await badgingCtc
                 .connect(periodSetter)
                 .setValidityPeriodForDocType(
-                    ethers.utils.toUtf8Bytes("Öğrenci").reverse(),
+                    ethers.utils.toUtf8Bytes("Öğrenci"),
                     tenDays
                 );
         });
@@ -126,7 +126,7 @@ describe("Badge", function () {
             expect(
                 await badgingCtc.isValid(
                     user1.address,
-                    ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+                    ethers.utils.toUtf8Bytes("Öğrenci")
                 )
             ).to.be.true;
 
@@ -138,7 +138,7 @@ describe("Badge", function () {
             expect(
                 await badgingCtc.isValid(
                     user1.address,
-                    ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+                    ethers.utils.toUtf8Bytes("Öğrenci")
                 )
             ).to.be.false;
         });
@@ -150,7 +150,7 @@ describe("Badge", function () {
 
             const tokenId = await badgingCtc.docToTokenId(
                 user1.address,
-                ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+                ethers.utils.toUtf8Bytes("Öğrenci")
             );
 
             await expect(
@@ -166,7 +166,7 @@ describe("Badge", function () {
             expect(
                 await badgingCtc.isValid(
                     user1.address,
-                    ethers.utils.toUtf8Bytes("Öğrenci").reverse()
+                    ethers.utils.toUtf8Bytes("Öğrenci")
                 )
             ).to.be.false;
         });
