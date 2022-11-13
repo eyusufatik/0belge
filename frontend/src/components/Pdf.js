@@ -1,13 +1,28 @@
-import { useState } from 'react'
-import { Document, Page } from 'react-pdf/dist/esm/entry.webpack5';
+import { useState, useCallback } from 'react'
+// import { Document, Page } from 'react-pdf/dist/esm/entry.webpack5';
+
+import { PdfViewer } from "react-pdf-selection";
 // import axios
-import axios from 'axios';
+
+const Viewer = ({ document }) => {
+  return (
+      <div>
+          <div style={{width: "100vw", height: "200px"}} />
+          <div style={{ display: "flex", flexDirection: "row" }}>
+              <div style={{ width: "60%" }}>{document}</div>
+              <div style={{ width: "40%" }}>Sidebar</div>
+          </div>
+      </div>
+  );
+};
+
 const Pdf = () => {
   const [barkodNo, setBarkodNo] = useState("YOKOG18C83NE4FJAGW");
   const [tc, setTc] = useState("10089028918");
   const [pdfUrl, setPdfUrl] = useState("");
   const pageNumber = 1;
   const [selectedText, setSelectedText] = useState(null);
+  const [selection, setSelection] = useState();
 
 
   const getPdf = async () => {
@@ -28,38 +43,58 @@ const Pdf = () => {
     // send request to http://localhost:3001/generate_proof?barkod=${barkodNo}&tc=${tc}
   }
 
-  if(selectedText){
+  const setAndLogSelection = useCallback(
+    (highlightTip) => {
+        console.log(
+            highlightTip ? `New ${"image" in highlightTip ? "area" : "text"} selection` : "Reset selection",
+            highlightTip?.position,
+        );
+        setSelection(highlightTip);
+    },
+    [setSelection],
+);
+
+
+  if (selectedText) {
     return (
       <div>
         <h1>Selected Text: {selectedText}</h1>
         <h3>Barkod: {barkodNo}</h3>
         <h3>TC: {tc}</h3>
         <div className="w-32 h-32">
-            <svg width="1024" height="1024" viewBox="0 0 1024 1024" className="w-80 h-80" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <svg width="1024" height="1024" viewBox="0 0 1024 1024" className="w-80 h-80" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style={{stopColor:"#FF0000",stopOpacity:1}} />
-                <stop offset="100%" style={{stopColor:"#FFFF00",stopOpacity:1}} />
+                <stop offset="0%" style={{ stopColor: "#FF0000", stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: "#FFFF00", stopOpacity: 1 }} />
               </linearGradient>
             </defs>
             <rect x="0" y="0" width="1024" height="1024" rx="50" ry="50" fill="url(#grad1)" />
-              <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="924">{selectedText}</text>
-              <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="100">0Belge</text>
-            </svg>
+            <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="924">{selectedText}</text>
+            <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="100">0Belge</text>
+          </svg>
         </div>
       </div>
     )
   }
 
   // Return a tailwind div with two text boxes and one submit button
-  if(pdfUrl){
+  if (pdfUrl) {
     // Show the pdf on the screen
     return (
       <div>
         <a href={pdfUrl}>SEE PDF</a>
-        <Document file={pdfUrl}>
-          <Page pageNumber={pageNumber} />
-        </Document>
+        <PdfViewer
+          url={pdfUrl}
+          // selections={pdfs[pdfIdx].selections}
+          // enableAreaSelection={useCallback(() => areaSelectionActive, [areaSelectionActive])}
+          // scale={scale}
+          onTextSelection={setAndLogSelection}
+          // onAreaSelection={setAndLogSelection}
+          // onLoad={dims => console.log(dims)}
+        >
+          {({ document }) => <Viewer document={document} />}
+        </PdfViewer>
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={mintNft}
