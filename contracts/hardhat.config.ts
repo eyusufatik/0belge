@@ -22,7 +22,9 @@ const config: HardhatUserConfig = {
       chainId: 43112,
       url: "http://176.236.121.139:9650/ext/C/rpc",
       accounts: [
-        process.env.PRIVATE_KEY!
+        process.env.PRIVATE_KEY!,
+        process.env.BURNER_KEY!,
+        process.env.PERIOD_SETTER_KEY!
       ]
     },
     hardhat: {
