@@ -16,53 +16,33 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-const sepolia = {
-  id: 11155111,
-  name: 'Sepolia Testnet',
-  network: 'sepolia',
+const digiathonTestnet = {
+  id: 43112,
+  name: 'Digiathon Testnet',
+  network: 'digiathon',
   iconUrl: '../public/images/avax-token.png',
   iconBackground: '#fff',
   nativeCurrency: {
     decimals: 18,
-    name: 'Sepolia ETH',
-    symbol: 'SepoliaETH',
+    name: 'AVAX',
+    symbol: 'AVAX',
   },
   rpcUrls: {
-    default: 'https://sepolia.infura.io/v3/935154d46a17467899ed732aca04dbf6',
+    default: 'http://176.236.121.139:9650/ext/C/rpc',
   },
   blockExplorers: {
-    default: { name: 'Etherscan', url: 'https://sepolia.etherscan.io/' }
-  },
-  testnet: true,
-};
-
-const localhost = {
-  id: 1337,
-  name: 'Local testnet',
-  network: 'localhost',
-  iconUrl: '../public/images/avax-token.png',
-  iconBackground: '#fff',
-  nativeCurrency: {
-    decimals: 18,
-    name: 'CPAY',
-    symbol: 'CPAY',
-  },
-  rpcUrls: {
-    default: 'http://127.0.0.1:8545/',
-  },
-  blockExplorers: {
-    default: { name: 'Etherscan', url: 'https://etherscan.io/' }
+    default: { name: 'Explorer', url: 'https://explorer.digiathon.com/' }
   },
   testnet: true,
 };
 
 const { chains, provider } = configureChains(
-  [localhost, sepolia],
+  [digiathonTestnet],
   [jsonRpcProvider({ rpc: chain => ({ http: chain.rpcUrls.default }) })]
 );
 
 const { connectors } = getDefaultWallets({
-  appName: "Offex Demo",
+  appName: "Sıfır Belge",
   chains
 });
 

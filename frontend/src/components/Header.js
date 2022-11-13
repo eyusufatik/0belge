@@ -4,9 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const routes = {
-  'Home': '/',
-  'Faucet': '/faucet',
-  'Exchange': '/exchange',
+  'Home': '/'
 }
 
 const Header = () => {
@@ -44,7 +42,7 @@ const Header = () => {
           >
             {/* <img src="https://chainway.xyz/img/favicon.jpg" alt="Boilerplate" width="30" height="60" className="mr-4" /> */}
             <span className="self-center text-xl font-bold whitespace-nowrap">
-            0Belge
+            SıfırBelge
             </span>
           </Link>
           <button
