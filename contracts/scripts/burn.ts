@@ -2,19 +2,18 @@ import { ethers, upgrades } from "hardhat";
 
 import { Badge } from "../typechain-types";
 
-const badgeCtcAddress = "0xdC78e8665A0925173056C664c1E4dE16148b01D7"
-// const docType = ethers.utils.toUtf8Bytes("Öğrenci");
-const docType = "0x77";
-const period = 10 * 24 * 60 * 60; // ten days
+const badgeCtcAddress = "0xF5B6a7D84BE909f89467fe8aC596EdcEd225834b"
 
+const address = "";
+const docType = ethers.utils.toUtf8Bytes("");
 
 async function main() {
-  const [ _, __, periodSetter ] = await ethers.getSigners();
+  const [ _, burner, __ ] = await ethers.getSigners();
 
   const Badge = await ethers.getContractFactory("Badge");
   const badgeCtc = Badge.attach(badgeCtcAddress);
 
-  await badgeCtc.connect(periodSetter).setValidityPeriodForDocType(docType, period);
+  await badgeCtc.connect(burner).burn(await badgeCtc.docToTokenId(address, docType));
 
   console.log("Set period for doc type.")
 }
