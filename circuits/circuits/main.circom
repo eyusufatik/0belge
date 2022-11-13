@@ -1,110 +1,146 @@
 include "../node_modules/circomlib/circuits/pedersen.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
-// template RecursivePedersen(N){
-//   signal input in[N*7];
-//   signal output out;
-//   component pedersenIlk = Pedersen(248*7);
-//   component pedersen[N - 1] = Pedersen(248*8)[N - 1];
-//   component bits[N*7] = Num2Bits(248)[N*7];
-//   component pedersenBits[N - 1] = Num2Bits(248)[N - 1];
-//   for(var i = 0; i < N; i++){
-//   }
-//   for(var i = 0; i < N; i++){
-//   }
-// }
-// template Pedersen64(N, M){
-//   signal input in[N*M];
-//   signal output out
-//   component pedersen[M] = Pedersen(248*N)[M];
-//   component ultimate = Pedersen(255*M);
-//   component bits[M] = Num2Bits(255)[M];
-//   component ilkBits[N*M] = Num2Bits(248)[N*M];
-//   for(var i = 0; i < M; i++){
-//     for(var k = 0; k < N; k++){
-//       ilkBits[i*N + k].in <== in[i*N + k];
-//       for(var j = 0; j < 248; j++){
-//         pedersen[i].in[248*k + j] <== ilkBits[i*N + k].out[j];
-//       }
-//     }
-//     bits[i].in <== pedersen[i].out[0]
-//     for(var j = 0; j < 255; j++){
-//       ultimate.in[i*255+j] <== bits[i].out[j];
-//     }
-//   }
-//   out <== ultimate.out[0];
-// }
+ 
+template Hasher() {
+    signal input a;
+    signal input b;
+    signal output hash;
 
-template BelgePedersenHasher(N) {
-  signal input in[N]; // Belgenin string datasi
-  signal output out; // Belgenin hash degeri
-
-  component pedersenHasherr = Pedersen(248*N);
+    component hasher = Pedersen(496);
+    component aBits = Num2Bits(248);
+    component bBits = Num2Bits(248);
+    aBits.in <== a;
+    bBits.in <== b;
+    for (var i = 0; i < 248; i++) {
+        hasher.in[i] <== aBits.out[i];
+        hasher.in[i + 248] <== bBits.out[i];
+    }
+    hash <== hasher.out[0];
+}
+template MultipleHasher(N){
+  signal input in[N];
+  signal output hash;
+  component hasher = Pedersen(248*N);
   component bits[N] = Num2Bits(248)[N];
-
-  for(var i = 0; i < N; i++) {
+  for(var i=0; i<N; i++){
     bits[i].in <== in[i];
-    for(var j = 0; j < 248; j++){
-      pedersenHasherr.in[i*248+j] <== bits[i].out[j];
+    for(var j=0; j<248; j++){
+      hasher.in[i*248+j] <== bits[i].out[j];
     }
   }
-  out <== pedersenHasherr.out[0];
+  hash <== hasher.out[0];
 }
 
-template Belge(N){
-  signal input chunks[N]; // Belgenin string datasi
-  signal private input left;
-  signal private input right;
-  // signal private input mid;
-  signal input belgeHash; // Belgenin hash degeri
+template EkremTree(N, M){
+  signal private input in[N*M];
+  signal output hash;
+  component leafHasher[N] = MultipleHasher(M)[N];
+  component rootHasher = Pedersen(248*N);
+  component bits[N] = Num2Bits(255)[N];
+  for(var i=0; i<N; i++){
+    for(var j = 0; j < M; j++){
+      leafHasher[i].in[j] <== in[i*M+j];
+    }
+    bits[i].in <== leafHasher[i].hash;
+    for(var j=0; j<248; j++){
+      rootHasher.in[i*248+j] <== bits[i].out[j];
+    }
+  }
+  hash <== rootHasher.out[0];
+}
 
-  component belgeHasher = BelgePedersenHasher(N);
-  component bits1 = Num2Bits(248);
-  component bits2 = Num2Bits(253);
-  component bits3 = Num2Bits(248);
-  // component bits[3] = Num2Bits(248)[3];
-  component pedersen = Pedersen(248*3);
-  for(var i = 0; i < N; i++) {
-    belgeHasher.in[i] <== chunks[i];
-  }
-  bits1.in <== left;
-  bits2.in <== belgeHasher.out;
-  bits3.in <== right;
-  for(var j = 0; j < 248; j++){
-    pedersen.in[j] <== bits1.out[j];
-  }
-  for(var j = 0; j < 248; j++){
-    pedersen.in[248 + j] <== bits2.out[j];
-  }
+template EscalarProduct(w) {
+    signal input in1[w];
+    signal input in2[w];
+    signal output out;
+    signal aux[w];
+    var lc = 0;
+    for (var i=0; i<w; i++) {
+        aux[i] <== in1[i]*in2[i];
+        lc = lc + aux[i];
+    }
+    out <== lc;
+}
 
-  for(var j = 0; j < 248; j++){
-    pedersen.in[248*2 + j] <== bits3.out[j];
-  }
+template Decoder(w) {
+    signal input inp;
+    signal output out[w];
+    signal output success;
+    var lc=0;
 
-  // bits[0].in <== left;
-  // // divide belgeHashe.out by 2^3
-  // var x = belgeHasher.out;
-  // bits[1].in <== x >> 3;
-  // bits[2].in <== right;
-  // for(var i = 0; i < 3; i++){
-  //   for(var j = 0; j < 248; j++){
-  //     pedersen.in[i*248+j] <== bits[i].out[j];
-  //   }
-  // }
-  belgeHash === pedersen.out[0];
+    for (var i=0; i<w; i++) {
+        out[i] <-- (inp == i) ? 1 : 0;
+        out[i] * (inp-i) === 0;
+        lc = lc + out[i];
+    }
+
+    lc ==> success;
+    success * (success -1) === 0;
 }
 
 
-// template Deneme(N, M){
-//   signal private input chunks[N*M]; // Belgenin string datasi
-//   signal input belgeHash; // Belgenin hash degeri
+template Multiplexer(nIn) {
+    signal input inp[nIn];
+    signal input sel;
+    signal output out;
+    component dec = Decoder(nIn);
+    component ep = EscalarProduct(nIn);
 
-//   component belgeHasher = Pedersen64(N, M);
-//   for(var i = 0; i < N*M; i++) {
-//     belgeHasher.in[i] <== chunks[i];
-//   }
+    sel ==> dec.inp;
+    for (var k=0; k<nIn; k++) {
+        inp[k] ==> ep.in1[k];
+        dec.out[k] ==> ep.in2[k];
+    }
+    ep.out ==> out;
+    dec.success === 1;
+}
 
-//   belgeHash === belgeHasher.out;
-// }
+template And(){
+  signal input a;
+  signal input b;
+  signal output out;
+  component abits = Num2Bits(248);
+  component bbits = Num2Bits(248);
+  component outbits = Bits2Num(248);
+  abits.in <== a;
+  bbits.in <== b;
+  for(var i=0; i<248; i++){
+    outbits.in[i] <== abits.out[i]*bbits.out[i];
+  }
+  out <== outbits.out;
+}
+template Ops2() {
+    signal input in[2];
+    signal output div;
 
+    div  <-- in[0] / in[1];
+}
 
-component main = Belge(3);
+template EkremProof(N, M){
+  signal private input in[N*M];
+  signal private input idx;
+  signal private input mask;
+  signal private input divident;
+  signal output value;
+  signal output hash;
+  component tree = EkremTree(N, M);
+  component mux = Multiplexer(N * M);
+  component and = And();
+  for(var i = 0; i < N*M; i++){
+    tree.in[i] <== in[i];
+    mux.inp[i] <== in[i];
+  }
+  mux.sel <== idx;
+  and.a <== mux.out;
+  and.b <== mask;
+
+  // value <== and.out;
+  component div = Ops2();
+  div.in[0] <== and.out;
+  div.in[1] <== divident;
+  value <== div.div;
+
+  hash <== tree.hash;
+}
+// component main = MultipleHasher(7);
+component main = EkremProof(7, 7);
