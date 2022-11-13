@@ -11,10 +11,8 @@ const badgeAddress = "0xdC78e8665A0925173056C664c1E4dE16148b01D7"
 const Viewer = ({ document }) => {
   return (
       <div>
-          <div style={{width: "100vw", height: "200px"}} />
           <div style={{ display: "flex", flexDirection: "row" }}>
               <div style={{ width: "60%" }}>{document}</div>
-              <div style={{ width: "40%" }}>Sidebar</div>
           </div>
       </div>
   );
@@ -78,7 +76,7 @@ const Pdf = () => {
         {/* <h1>Selected Text: {selectedText}</h1> */}
         <h3>Barkod: {barkodNo}</h3>
         <h3>TC: {tc}</h3>
-        <div className="w-32 h-32">
+        <div className="w-fit h-fit">
           <svg width="1024" height="1024" viewBox="0 0 1024 1024" className="w-80 h-80" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -113,7 +111,7 @@ const Pdf = () => {
           {({ document }) => <Viewer document={document} />}
         </PdfViewer>
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="my-2 mx-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={mintNft}
         >Mint NFT</button>
       </div>
