@@ -1,8 +1,12 @@
+import { ethers, BigNumber } from 'ethers';
 import { useState, useCallback } from 'react'
 // import { Document, Page } from 'react-pdf/dist/esm/entry.webpack5';
 
 import { PdfViewer } from "react-pdf-selection";
-// import axios
+
+const badgeABI = require('../abi/badge.json')
+
+const badgeAddress = "0xdC78e8665A0925173056C664c1E4dE16148b01D7"
 
 const Viewer = ({ document }) => {
   return (
@@ -38,17 +42,30 @@ const Pdf = () => {
     // const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
     // const selectedText = iframeDocument.getSelection().toString();
     // alert(selectedText);
-    const selectedText = window.getSelection().toString();
-    setSelectedText(selectedText);
+    // const text = window.getSelection().toString();
+    const text = "Öğrenci";
+    console.log("WOOOOOOOOOO", text);
+    setSelectedText(text);
     // send request to http://localhost:3001/generate_proof?barkod=${barkodNo}&tc=${tc}
+    const proof = "0x05433396a101e2652adbe0698d4f172bc25444451e0674c1d95821266390fbdd29428122fa2ca3b823383927e1a883890caa6c124878286bfa9627a163f7b599238dfbc62ca68812aa8ca60c4ebf0f24d59c68c190648fb1a9e3bfd22592c0582c3974477dee40a8153556c8a4d237e595f0fdb68776980bda5c1c352265dbd6267ec4612c29025bbb9d4c4d9a07adc798a68fea6cfbea78340364a3479cf6b50e1b93c64c240ce4cdbfd4c5e68faa513db78ba39e8f93e6d24bd6711c4b0d541b8f9f2b2813c7a3f392f2acd53a02447aefbed1e80f1b3772bec990d8e7abf315245ba110792a25477db4b15a0a342cca1703de85226372bc45956be4c66834";
+    const docHash = "0x06a737e23f2991b63c73865215a2b2e27df54aafefb9d1ce205e664fc809f118";
+    const num = "0x0000000000000000000000000000000000000000000000000000000000000077";
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    console.log(badgeABI);
+
+    const contract = new ethers.Contract(badgeAddress, badgeABI, signer);
+
+    await contract.mint(proof, docHash, num);
   }
 
   const setAndLogSelection = useCallback(
     (highlightTip) => {
-        console.log(
-            highlightTip ? `New ${"image" in highlightTip ? "area" : "text"} selection` : "Reset selection",
-            highlightTip?.position,
-        );
+        // console.log(
+        //     highlightTip ? `New ${"image" in highlightTip ? "area" : "text"} selection` : "Reset selection",
+        //     highlightTip?.position,
+        // );
         setSelection(highlightTip);
     },
     [setSelection],
@@ -58,7 +75,7 @@ const Pdf = () => {
   if (selectedText) {
     return (
       <div>
-        <h1>Selected Text: {selectedText}</h1>
+        {/* <h1>Selected Text: {selectedText}</h1> */}
         <h3>Barkod: {barkodNo}</h3>
         <h3>TC: {tc}</h3>
         <div className="w-32 h-32">
