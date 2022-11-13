@@ -6,12 +6,11 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-// import "hardhat/console.sol";
 
 interface IVerifier {
     function verifyProof(
         bytes calldata proof,
-        uint[4] calldata inputs
+        uint[2] calldata inputs
     ) external view returns (bool);
 }
 
@@ -63,17 +62,17 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
     function mint(
         bytes calldata _proof,
         bytes32 _docHash,
-        uint256[3] calldata _nums
+        uint256 _num
     ) public {
         require(
             verifier.verifyProof(
                 _proof,
-                [uint256(_docHash), _nums[0], _nums[1], _nums[2]]
+                [_num, uint256(_docHash)]
             ),
             "IP-01"
         );
 
-        bytes memory docType = numbersToBytes(_nums[0], _nums[1], _nums[2]);
+        bytes memory docType = numberToBytes(_num);
 
         require(block.timestamp > validUntil[msg.sender][docType], "AHB-01");
 
@@ -93,12 +92,10 @@ contract Badge is ERC721, ERC721Burnable, AccessControl {
         _burn(_tokenId);
     }
 
-    function numbersToBytes(
-        uint256 _num1,
-        uint256 _num2,
-        uint256 _num3
+    function numberToBytes(
+        uint256 _num1
     ) private pure returns (bytes memory) {
-        bytes memory docType = abi.encodePacked(_num1, _num2, _num3);
+        bytes memory docType = abi.encodePacked(_num1);
         uint8 nonZero;
         for (uint8 i = 0; i < docType.length; i++) {
             if (docType[i] != 0) {
