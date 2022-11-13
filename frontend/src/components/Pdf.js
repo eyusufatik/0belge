@@ -40,8 +40,7 @@ const Pdf = () => {
     // const selectedText = iframeDocument.getSelection().toString();
     // alert(selectedText);
     // const text = window.getSelection().toString();
-    const text = "Öğrenci";
-    console.log("WOOOOOOOOOO", text);
+    const text = "Aktif Öğrenci";
     setSelectedText(text);
     // send request to http://localhost:3001/generate_proof?barkod=${barkodNo}&tc=${tc}
     const proof = "0x05433396a101e2652adbe0698d4f172bc25444451e0674c1d95821266390fbdd29428122fa2ca3b823383927e1a883890caa6c124878286bfa9627a163f7b599238dfbc62ca68812aa8ca60c4ebf0f24d59c68c190648fb1a9e3bfd22592c0582c3974477dee40a8153556c8a4d237e595f0fdb68776980bda5c1c352265dbd6267ec4612c29025bbb9d4c4d9a07adc798a68fea6cfbea78340364a3479cf6b50e1b93c64c240ce4cdbfd4c5e68faa513db78ba39e8f93e6d24bd6711c4b0d541b8f9f2b2813c7a3f392f2acd53a02447aefbed1e80f1b3772bec990d8e7abf315245ba110792a25477db4b15a0a342cca1703de85226372bc45956be4c66834";
@@ -72,20 +71,17 @@ const Pdf = () => {
   if (selectedText) {
     return (
       <div>
-        {/* <h1>Selected Text: {selectedText}</h1> */}
-        <h3>Barkod: {barkodNo}</h3>
-        <h3>TC: {tc}</h3>
         <div className="w-fit h-fit">
           <svg width="1024" height="1024" viewBox="0 0 1024 1024" className="w-80 h-80" version="1.1" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style={{ stopColor: "#FF0000", stopOpacity: 1 }} />
                 <stop offset="100%" style={{ stopColor: "#FFFF00", stopOpacity: 1 }} />
               </linearGradient>
             </defs>
             <rect x="0" y="0" width="1024" height="1024" rx="50" ry="50" fill="url(#grad1)" />
-            <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="924">{selectedText}</text>
-            <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="100">0Belge</text>
+            <text fill="#ffffff" fontSize="95" fontFamily="Verdana" x="100" y="924">{selectedText}</text>
+            <text fill="#ffffff" fontSize="45" fontFamily="Verdana" x="100" y="100">SıfırBelge</text>
           </svg>
         </div>
       </div>
