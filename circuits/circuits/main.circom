@@ -142,5 +142,4 @@ template EkremProof(N, M){
 
   hash <== tree.hash;
 }
-// component main = MultipleHasher(7);
 component main = EkremProof(7, 7);
