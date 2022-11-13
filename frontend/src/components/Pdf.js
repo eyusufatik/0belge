@@ -28,7 +28,6 @@ const Pdf = () => {
 
 
   const getPdf = async () => {
-    alert("PDF indiriliyor...");
     // const response = await axios.get(`http://localhost:5000/get_document?barkod=${barkodNo}&tc=${tc}`);
     // console.log(response);
     setPdfUrl(`http://127.0.0.1:5000/get_document?barkod=${barkodNo}&tc=${tc}`);
